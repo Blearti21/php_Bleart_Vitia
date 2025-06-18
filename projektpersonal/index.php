@@ -1,4 +1,6 @@
 <?php
+require_once 'config.php';
+
 // Të dhënat e makinave (në vend të bazës së të dhënave)
 $cars = [
     [
@@ -132,9 +134,27 @@ if (!empty($fuel_type)) {
             <a class="navbar-brand" href="index.php">
                 <i class="fas fa-car"></i> AutoShop
             </a>
-            <div class="navbar-nav ms-auto">
+            <div class="navbar-nav me-auto">
                 <a class="nav-link" href="index.php">Kryefaqja</a>
                 <a class="nav-link" href="contact.php">Kontakti</a>
+            </div>
+            <div class="navbar-nav">
+                <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']): ?>
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <?php echo htmlspecialchars($_SESSION['user_name']); ?>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="dashboard.php?logout=1"><i class="fas fa-sign-out-alt"></i> Dil</a></li>
+                        </ul>
+                    </div>
+                <?php else: ?>
+                    <a class="nav-link" href="login.php">
+                        <i class="fas fa-sign-in-alt"></i> Kyçu
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </nav>
@@ -144,6 +164,11 @@ if (!empty($fuel_type)) {
         <div class="container">
             <h1 class="display-4 mb-4">🚗 Gjeni Makinën Tuaj</h1>
             <p class="lead mb-4">Zgjidhni nga koleksioni ynë i makinave të përdorura</p>
+            <?php if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']): ?>
+                <a href="login.php" class="btn btn-light btn-lg">
+                    <i class="fas fa-user-plus"></i> Regjistrohu për më shumë
+                </a>
+            <?php endif; ?>
         </div>
     </section>
 
@@ -205,9 +230,16 @@ if (!empty($fuel_type)) {
                                     <p class="card-text flex-grow-1"><?= $car['description'] ?></p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="price">€<?= number_format($car['price']) ?></span>
-                                        <a href="details.php?id=<?= $car['id'] ?>" class="btn btn-primary">
-                                            <i class="fas fa-eye"></i> Detajet
-                                        </a>
+                                        <div>
+                                            <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']): ?>
+                                                <button class="btn btn-outline-danger btn-sm me-2" title="Shto në të preferuarat">
+                                                    <i class="fas fa-heart"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                            <a href="details.php?id=<?= $car['id'] ?>" class="btn btn-primary">
+                                                <i class="fas fa-eye"></i> Detajet
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

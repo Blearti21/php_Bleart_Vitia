@@ -1,4 +1,6 @@
 <?php
+require_once 'config.php';
+
 $message_sent = false;
 $error_message = '';
 
@@ -11,9 +13,14 @@ if ($_POST && isset($_POST['send_message'])) {
     if (empty($name) || empty($email) || empty($message)) {
         $error_message = 'Ju lutemi plotësoni të gjitha fushat e detyrueshme.';
     } else {
-        // Në një projekt real, këtu do të ruanim mesazhin në bazën e të dhënave
-        // Për tani, thjesht tregojmë një mesazh suksesi
-        $message_sent = true;
+        try {
+            $pdo = getConnection();
+            $stmt = $pdo->prepare("INSERT INTO messages (name, email, phone, message) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$name, $email, $phone, $message]);
+            $message_sent = true;
+        } catch(PDOException $e) {
+            $error_message = 'Gabim në dërgimin e mesazhit. Provoni përsëri.';
+        }
     }
 }
 ?>
@@ -34,9 +41,27 @@ if ($_POST && isset($_POST['send_message'])) {
             <a class="navbar-brand" href="index.php">
                 <i class="fas fa-car"></i> AutoShop
             </a>
-            <div class="navbar-nav ms-auto">
+            <div class="navbar-nav me-auto">
                 <a class="nav-link" href="index.php">Kryefaqja</a>
                 <a class="nav-link active" href="contact.php">Kontakti</a>
+            </div>
+            <div class="navbar-nav">
+                <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']): ?>
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <?php echo htmlspecialchars($_SESSION['user_name']); ?>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="dashboard.php?logout=1"><i class="fas fa-sign-out-alt"></i> Dil</a></li>
+                        </ul>
+                    </div>
+                <?php else: ?>
+                    <a class="nav-link" href="login.php">
+                        <i class="fas fa-sign-in-alt"></i> Kyçu
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </nav>
@@ -48,7 +73,7 @@ if ($_POST && isset($_POST['send_message'])) {
                 
                 <?php if ($message_sent): ?>
                     <div class="alert alert-success">
-                        <i class="fas fa-check-circle"></i> Mesazhi juaj u dërgua me sukses! Do t'ju përgjigjemi sa më shpejt.
+                        <i class="fas fa-check-circle"></i> Mesazhi juaj u dërgua dhe u ruajt me sukses! Do t'ju përgjigjemi sa më shpejt.
                     </div>
                 <?php endif; ?>
                 
